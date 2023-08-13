@@ -2,20 +2,39 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo 'Building...'
+                // Checkout your code from the repository
+                checkout scm
             }
         }
-        stage('Test') {
+
+        stage('Deploy to Kubernetes') {
             steps {
-                echo 'Testing...'
+                script {
+                    // Apply the Kubernetes deployment configuration
+                    sh 'kubectl apply -f deployment.yaml'
+
+                    // Check the status of the deployment
+                    sh 'kubectl rollout status deployment/sample-app'
+
+                    // List pods in the default namespace
+                    sh 'kubectl get pods'
+                }
             }
         }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying.....'
-            }
+    }
+
+    post {
+        always {
+            // Cleanup or other post-build actions
+            echo 'This will always run'
+        }
+        success {
+            echo 'Job succeeded!'
+        }
+        failure {
+            echo 'Job failed!'
         }
     }
 }
