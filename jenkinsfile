@@ -37,15 +37,37 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            // Steps to always run after the pipeline, e.g., notifications
-        }
-        success {
-            echo "Deployment successful!"
-        }
-        failure {
-            echo "Deployment failed!"
-        }
+post {
+    always {
+        // Archive the build artifacts and test results, assuming you have such files
+        archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+        junit '**/target/test-*.xml'
+        
+        // Clean up the workspace to save space
+        cleanWs()
+    }
+    success {
+        echo "Deployment was successful!"
+        
+        // Send a success notification, for example, to a Slack channel
+        // slackSend (color: '#00FF00', message: "Deployment was successful! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+    failure {
+        echo "Deployment failed!"
+        
+        // Send a failure notification, for example, to a Slack channel
+        // slackSend (color: '#FF0000', message: "Deployment failed! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+    unstable {
+        echo "Deployment had some issues!"
+        
+        // Send a notification for unstable builds, if needed
+        // slackSend (color: '#FFFF00', message: "Deployment had some issues! Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+    }
+    changed {
+        echo "Deployment status changed!"
+        
+        // This will run if the current build's status is different from the last build's status
     }
 }
+
