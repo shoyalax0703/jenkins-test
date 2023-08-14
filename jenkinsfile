@@ -14,6 +14,9 @@ spec:
   - name: jnlp
     image: jenkins/inbound-agent:latest
     args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
+    env:
+    - name: PATH
+      value: /usr/local/bin:/usr/bin:/bin:/home/jenkins/agent/bin
   """
         }
     }
@@ -23,7 +26,7 @@ spec:
                 sh '''
                 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
                 chmod +x kubectl
-                mv kubectl /usr/local/bin/
+                mv kubectl /home/jenkins/agent/bin/
                 '''
             }
         }
