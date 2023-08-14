@@ -70,4 +70,4 @@ post {
         // This will run if the current build's status is different from the last build's status
     }
 }
-
+}
