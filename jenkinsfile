@@ -1,7 +1,6 @@
 pipeline {
     agent {
         kubernetes {
-            // Use a label that matches the Jenkins Kubernetes plugin configuration
             label 'jenkins-pod'
             yaml """
 apiVersion: v1
@@ -10,7 +9,7 @@ metadata:
   labels:
     some-label: jenkins-pod
 spec:
-  serviceAccountName: jenkins
+  serviceAccountName: jenkins-sa
   containers:
   - name: jnlp
     image: jenkins/inbound-agent:latest
@@ -19,6 +18,15 @@ spec:
         }
     }
     stages {
+        stage('Setup') {
+            steps {
+                sh '''
+                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                chmod +x kubectl
+                sudo mv kubectl /usr/local/bin/
+                '''
+            }
+        }
         stage('List Nodes') {
             steps {
                 sh 'kubectl get nodes'
