@@ -2,44 +2,12 @@ pipeline {
     agent any
 
     stages {
-        stage('Check kubectl') {
+        stage('Test kubectl with Plugin') {
             steps {
-                echo 'Checking kubectl version...'
-                sh 'kubectl version'
+                withKubeConfig(credentialsId: 'kind') {
+                    sh 'kubectl get nodes'
+                }
             }
-        }
-
-        stage('Cluster Info') {
-            steps {
-                echo 'Fetching cluster information...'
-                sh 'kubectl cluster-info'
-            }
-        }
-
-        stage('Get Nodes') {
-            steps {
-                echo 'Listing nodes in the cluster...'
-                sh 'kubectl get nodes'
-            }
-        }
-
-        stage('Get Namespaces') {
-            steps {
-                echo 'Listing namespaces...'
-                sh 'kubectl get namespaces'
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline finished!'
-        }
-        success {
-            echo 'All kubectl commands executed successfully!'
-        }
-        failure {
-            echo 'Failed to execute some kubectl commands!'
         }
     }
 }
