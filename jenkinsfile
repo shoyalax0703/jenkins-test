@@ -23,17 +23,32 @@ spec:
     stages {
         stage('Setup') {
             steps {
-sh '''
-mkdir -p /home/jenkins/agent/bin/
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x kubectl
-mv kubectl /home/jenkins/agent/bin/
-'''
+                sh '''
+                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                chmod +x kubectl
+                mv kubectl /home/jenkins/agent/bin/
+                '''
             }
         }
-        stage('List Nodes') {
+        stage('Deploy') {
             steps {
-                sh 'kubectl get nodes'
+                sh 'kubectl apply -f deployment.yaml'
+            }
+        }
+        stage('Check Pods') {
+            steps {
+                script {
+                    // Assuming your deployment has a label 'app=myapp' to identify its pods.
+                    def podStatus = sh(script: "kubectl get pods -l app=myapp -o=jsonpath='{.items[*].status.phase}'", returnStdout: true).trim()
+                    def pods = podStatus.split()
+
+                    // Check if all pods are running
+                    for (pod in pods) {
+                        if (pod != "Running") {
+                            error "Pod is not running: ${pod}"
+                        }
+                    }
+                }
             }
         }
     }
